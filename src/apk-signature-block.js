@@ -326,18 +326,31 @@ class ApkSignatureBlock {
      * @param {Object} eocd - EOCD信息
      */
     async rebuildApkWithSignatureBlock(apkPath, originalBuffer, signatureBlock, originalCentralDirOffset, eocd) {
+        // 检查是否已存在Signature Block
+        const apkStructure = await this.parseApkStructure(apkPath);
+        const existingSigBlock = apkStructure.sigBlock;
+        
+        let zipEntriesEnd = originalCentralDirOffset;
+        let sizeDifference = signatureBlock.length;
+        
+        if (existingSigBlock) {
+            // 如果已存在Signature Block，替换它
+            zipEntriesEnd = existingSigBlock.start;
+            sizeDifference = signatureBlock.length - (existingSigBlock.end + 8 - existingSigBlock.start);
+        }
+        
         // 计算新的Central Directory偏移量
-        const newCentralDirOffset = originalCentralDirOffset + signatureBlock.length;
+        const newCentralDirOffset = originalCentralDirOffset + sizeDifference;
         
         // 创建新的APK缓冲区
-        const newApkSize = originalBuffer.length + signatureBlock.length;
+        const newApkSize = originalBuffer.length + sizeDifference;
         const newBuffer = Buffer.allocUnsafe(newApkSize);
         
         let offset = 0;
         
-        // 1. 复制ZIP entries (从开头到原Central Directory)
-        originalBuffer.copy(newBuffer, offset, 0, originalCentralDirOffset);
-        offset += originalCentralDirOffset;
+        // 1. 复制ZIP entries (从开头到Signature Block位置)
+        originalBuffer.copy(newBuffer, offset, 0, zipEntriesEnd);
+        offset += zipEntriesEnd;
         
         // 2. 插入新的Signature Block
         signatureBlock.copy(newBuffer, offset);
