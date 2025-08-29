@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const WalleCore = require('./walle-core');
 
 let mainWindow;
@@ -165,5 +166,46 @@ ipcMain.handle('check-walle-installed', async () => {
     return true; // 内置walle模块始终可用
   } catch (error) {
     return false;
+  }
+});
+
+// 处理Linux平台文件路径获取
+ipcMain.handle('get-file-path', async (event, fileInfo) => {
+  try {
+    // 在Linux上，我们可能需要通过文件信息来查找文件
+    // 这里返回null，让前端使用临时文件方案
+    return null;
+  } catch (error) {
+    console.error('获取文件路径失败:', error);
+    return null;
+  }
+});
+
+// 创建临时文件
+ipcMain.handle('create-temp-file', async (event, { name, data }) => {
+  try {
+    const tempDir = os.tmpdir();
+    const tempFileName = `apk-channel-${Date.now()}-${name}`;
+    const tempPath = path.join(tempDir, tempFileName);
+    
+    // 写入临时文件
+    fs.writeFileSync(tempPath, data);
+    
+    // 设置清理定时器（30分钟后删除）
+    setTimeout(() => {
+      try {
+        if (fs.existsSync(tempPath)) {
+          fs.unlinkSync(tempPath);
+          console.log('临时文件已清理:', tempPath);
+        }
+      } catch (error) {
+        console.warn('清理临时文件失败:', error);
+      }
+    }, 30 * 60 * 1000); // 30分钟
+    
+    return tempPath;
+  } catch (error) {
+    console.error('创建临时文件失败:', error);
+    throw error;
   }
 });

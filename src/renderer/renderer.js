@@ -111,14 +111,84 @@ class APKChannelPacker {
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
-            handler(e.dataTransfer.files);
+            this.handleFileDrop(e.dataTransfer, handler);
         });
+    }
+
+    async handleFileDrop(dataTransfer, handler) {
+        const files = Array.from(dataTransfer.files);
+        const processedFiles = [];
+        
+        for (const file of files) {
+            let filePath = null;
+            
+            // 尝试多种方式获取文件路径
+            if (file.path) {
+                // Electron 在 Windows/macOS 上通常有 path 属性
+                filePath = file.path;
+            } else if (dataTransfer.items) {
+                // Linux 上使用 webkitGetAsEntry 获取文件路径
+                const items = Array.from(dataTransfer.items);
+                for (const item of items) {
+                    if (item.kind === 'file' && item.webkitGetAsEntry) {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry && entry.isFile && entry.fullPath) {
+                            // 在 Linux 上，我们需要通过 IPC 获取真实路径
+                            try {
+                                filePath = await ipcRenderer.invoke('get-file-path', {
+                                    name: file.name,
+                                    size: file.size,
+                                    lastModified: file.lastModified
+                                });
+                            } catch (error) {
+                                console.warn('无法获取文件路径，使用临时文件:', error);
+                                // 如果无法获取路径，创建临时文件
+                                filePath = await this.createTempFile(file);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!filePath) {
+                // 最后的备选方案：创建临时文件
+                filePath = await this.createTempFile(file);
+            }
+            
+            if (filePath) {
+                processedFiles.push({ ...file, path: filePath });
+            }
+        }
+        
+        if (processedFiles.length > 0) {
+            handler(processedFiles);
+        }
+    }
+
+    async createTempFile(file) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const tempPath = await ipcRenderer.invoke('create-temp-file', {
+                name: file.name,
+                data: buffer
+            });
+            return tempPath;
+        } catch (error) {
+            console.error('创建临时文件失败:', error);
+            return null;
+        }
     }
 
     handleApkDrop(files) {
         const file = files[0];
         if (file && file.name.toLowerCase().endsWith('.apk')) {
-            this.setApkFile(file.path);
+            if (file.path) {
+                this.setApkFile(file.path);
+            } else {
+                this.showError('无法获取APK文件路径，请尝试使用浏览按钮选择文件');
+            }
         } else {
             this.showError('请拖拽有效的APK文件');
         }
@@ -127,7 +197,11 @@ class APKChannelPacker {
     handleChannelDrop(files) {
         const file = files[0];
         if (file && file.name.toLowerCase().endsWith('.txt')) {
-            this.setChannelFile(file.path);
+            if (file.path) {
+                this.setChannelFile(file.path);
+            } else {
+                this.showError('无法获取渠道文件路径，请尝试使用浏览按钮选择文件');
+            }
         } else {
             this.showError('请拖拽有效的TXT渠道配置文件');
         }

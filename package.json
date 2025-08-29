@@ -1,6 +1,6 @@
 {
   "name": "apk-channel-packer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mac客户端应用，支持使用美团walle工具进行APK多渠道打包",
   "main": "src/main.js",
   "scripts": {
@@ -8,7 +8,11 @@
     "dev": "electron . --dev",
     "build": "electron-builder",
     "build-mac": "electron-builder --mac",
-    "pack": "electron-builder --dir"
+    "build-win": "electron-builder --win",
+    "build-linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "test": "node test/test-walle-core.js",
+    "test-drag": "electron test-drag-drop.js"
   },
   "keywords": [
     "electron",
@@ -33,19 +37,61 @@
     "directories": {
       "output": "dist"
     },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [
         {
           "target": "zip",
-          "arch": [
-            "arm64"
-          ]
+          "arch": ["arm64", "x64"]
+        },
+        {
+          "target": "dmg",
+          "arch": ["arm64", "x64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "ia32"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        },
+        {
+          "target": "tar.gz",
+          "arch": ["x64"]
         }
       ]
     },
     "dmg": {
       "writeUpdateInfo": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
