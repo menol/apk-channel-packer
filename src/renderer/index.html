@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APK多渠道打包工具</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>APK多渠道打包工具</h1>
+            <p>基于美团Walle工具的Mac客户端</p>
+        </header>
+
+        <main class="main-content">
+            <!-- APK文件选择区域 -->
+            <section class="file-section">
+                <h2>1. 选择APK文件</h2>
+                <div class="drop-zone" id="apk-drop-zone">
+                    <div class="drop-zone-content">
+                        <svg class="drop-icon" viewBox="0 0 24 24">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                        </svg>
+                        <p class="drop-text">拖拽APK文件到此处</p>
+                        <p class="drop-subtext">或者 <button class="browse-btn" id="browse-apk">浏览文件</button></p>
+                    </div>
+                </div>
+                <div class="file-info" id="apk-info" style="display: none;">
+                    <span class="file-name" id="apk-name"></span>
+                    <button class="remove-btn" id="remove-apk">×</button>
+                </div>
+            </section>
+
+            <!-- 渠道配置文件选择区域 -->
+            <section class="file-section">
+                <h2>2. 选择渠道配置文件</h2>
+                <div class="drop-zone" id="channel-drop-zone">
+                    <div class="drop-zone-content">
+                        <svg class="drop-icon" viewBox="0 0 24 24">
+                            <path d="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" />
+                        </svg>
+                        <p class="drop-text">拖拽TXT渠道文件到此处</p>
+                        <p class="drop-subtext">或者 <button class="browse-btn" id="browse-channel">浏览文件</button></p>
+                    </div>
+                </div>
+                <div class="file-info" id="channel-info" style="display: none;">
+                    <span class="file-name" id="channel-name"></span>
+                    <button class="remove-btn" id="remove-channel">×</button>
+                </div>
+                <div class="channel-preview" id="channel-preview" style="display: none;">
+                    <h3>渠道列表预览:</h3>
+                    <div class="channel-list" id="channel-list"></div>
+                </div>
+            </section>
+
+            <!-- 输出目录选择 -->
+            <section class="file-section">
+                <h2>3. 选择输出目录</h2>
+                <div class="output-section">
+                    <input type="text" id="output-path" placeholder="选择输出目录..." readonly>
+                    <button class="browse-btn" id="browse-output">选择目录</button>
+                </div>
+            </section>
+
+            <!-- 打包按钮和进度 -->
+            <section class="action-section">
+                <button class="pack-btn" id="pack-btn" disabled>
+                    <svg class="btn-icon" viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z" />
+                    </svg>
+                    开始打包
+                </button>
+                
+                <div class="progress-section" id="progress-section" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <p class="progress-text" id="progress-text">准备中...</p>
+                </div>
+            </section>
+
+            <!-- 日志输出区域 -->
+            <section class="log-section" id="log-section" style="display: none;">
+                <h3>打包日志</h3>
+                <div class="log-container" id="log-container"></div>
+                <button class="clear-log-btn" id="clear-log">清空日志</button>
+            </section>
+        </main>
+
+        <!-- 状态栏 -->
+        <footer class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Walle状态:</span>
+                <span class="status-value" id="walle-status">检查中...</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 错误提示模态框 -->
+    <div class="modal" id="error-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>错误</h3>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="error-ok">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

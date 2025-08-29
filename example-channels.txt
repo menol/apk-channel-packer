@@ -1,0 +1,28 @@
+# APK多渠道打包示例配置文件
+# 每行一个渠道名称，支持注释（以#开头的行会被忽略）
+
+# 主流应用商店
+huawei
+xiaomi
+vivo
+oppo
+meizu
+samsung
+
+# 第三方应用市场
+baidu
+360
+tencent
+wandoujia
+pp
+sogou
+lenovo
+
+# 其他渠道
+official
+website
+promotion
+
+# 你也可以使用键值对格式（可选）
+# channel_name=extra_info
+# test_channel=测试渠道

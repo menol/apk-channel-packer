@@ -1,0 +1,51 @@
+{
+  "name": "apk-channel-packer",
+  "version": "1.0.0",
+  "description": "Mac客户端应用，支持使用美团walle工具进行APK多渠道打包",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build-mac": "electron-builder --mac",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "electron",
+    "apk",
+    "walle",
+    "channel",
+    "packaging"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "fs-extra": "^11.2.0"
+  },
+  "build": {
+    "appId": "com.example.apkchannelpacker",
+    "productName": "APK Channel Packer",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "writeUpdateInfo": false
+    }
+  }
+}
